@@ -1,0 +1,26 @@
+{
+  "name": "simplegame",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franklinjjeng/hrsf53-mvp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/franklinjjeng/hrsf53-mvp/issues"
+  },
+  "homepage": "https://github.com/franklinjjeng/hrsf53-mvp#readme",
+  "dependencies": {
+    "angular": "^1.6.1",
+    "express": "^4.14.0",
+    "node": "0.0.0",
+    "nodemon": "^1.11.0"
+  }
+}
