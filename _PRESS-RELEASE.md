@@ -1,4 +1,7 @@
-# Project Name #
+Simple Games
+Simple games to provide entertainment for all.
+
+Provide quick pick up and play games to provide entertainment during your dull moments of your life because people need more ways to be plugged. Provide more options for when you're waiting in line or want to fill in that awkward gap between classes. The games will be made available anywhere through the web.
 
 <!-- 
 > This material was originally posted [here](http://www.quora.com/What-is-Amazons-approach-to-product-development-and-product-management). It is reproduced here for posterities sake.
