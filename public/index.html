@@ -8,6 +8,20 @@
   </header>
   <body ng-app='simpleGame'>
     <div ng-controller='gamesController'>
+      <div>
+        <table>
+          <thead>
+            <th>Player 1</th>
+            <th>Player 2</th>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Score: {{ playerScore.scores.player1 }}</td>
+              <td>Score: {{ playerScore.scores.player2 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <table class="gameBoard">
         <tr>
           <td class="box" ng-repeat='grid in row0' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
@@ -18,8 +32,11 @@
         <tr>
           <td class="box" ng-repeat='grid in row2' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
         </tr>
-
       </table>
+      <hr>
+        <pre>
+          <button ng-click='devFunctions()'>Test Dev Functions</button>
+        </pre>
     </div>
   </body>
 </html>
