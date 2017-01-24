@@ -4,6 +4,7 @@
     <title>Simple Games</title>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
     <script src="client/app.js"></script>
+    <!-- <script src="client/services.js"></script> --> 
     <link rel="stylesheet" href="style.css"/>
   </header>
   <body ng-app='simpleGame'>
@@ -16,8 +17,10 @@
           </thead>
           <tbody>
             <tr>
-              <td>Score: {{ playerScore.scores.player1 }}</td>
-              <td>Score: {{ playerScore.scores.player2 }}</td>
+              <!-- <td>Score: {{ playerScore.scores.player1 }}</td>
+              <td>Score: {{ playerScore.scores.player2 }}</td> -->
+              <td>Score: {{ playerScore[0].score }}</td>
+              <td>Score: {{ playerScore[1].score }}</td>
             </tr>
           </tbody>
         </table>
@@ -36,6 +39,7 @@
       <div>
         <span>Player {{ player[1] + 1 }}'s Turn ({{ player[0] }})</span>
         <br>
+        <span>{{ invalid }}</span>
         <span>{{ winner }}</span>
       </div>
       <hr>
