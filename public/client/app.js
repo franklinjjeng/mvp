@@ -2,45 +2,58 @@ var simpleGame = angular.module('simpleGame', []);
 
 simpleGame.factory('games', function($http) {
 
-  var playerScore = {scores:
-    {
-      player1: 0,
-      player2: 0
-    }
-  }
-
   var getScore = function() {
-    return playerScore;
+    return $http({
+      method: 'GET',
+      url: 'http://127.0.0.1:3000/playerScore'
+    });
   }
-
-  var gameBoard = {board: 
-    [
-      [{id: 0, occupy: '_  _', coord: [0, 0]}, {id: 1, occupy: '_  _', coord: [0, 1]}, {id: 2, occupy: '_  _', coord: [0, 2]}],
-      [{id: 3, occupy: '_  _', coord: [1, 0]}, {id: 4, occupy: '_  _', coord: [1, 1]}, {id: 5, occupy: '_  _', coord: [1, 2]}],
-      [{id: 6, occupy: '_  _', coord: [2, 0]}, {id: 7, occupy: '_  _', coord: [2, 1]}, {id: 8, occupy: '_  _', coord: [2, 2]}]
-    ]
-  };
-
-  var playerSpace = ['_O_', '_X_'];
-  
-  var playerTurn = 0;
 
   var getBoard = function() {
-    return gameBoard;
+    return $http({
+      method: 'GET',
+      url: 'http://127.0.0.1:3000/gameBoard'
+    });
   };
 
   var occupyBoard = function(position, move) {
-    gameBoard.board[position[0]][position[1]].occupy = move;
+    return $http({
+      method: 'POST',
+      url: 'http://127.0.0.1:3000/occupyBoard',
+      data: JSON.stringify({position: position, move: move})
+    })
   };
 
-  var changePlayer = function() {
-    if(!playerTurn) {
-      playerTurn = 1;
-    } else {
-      playerTurn = 0;
-    }
-    return playerSpace[playerTurn];
+  var changePlayer = function(callback) {
+    getTurn().then(function(playerTurn) {
+      console.log('prev player', playerTurn.data);
+      if(!playerTurn.data[1]) {
+        playerTurn.data[1] = 1;
+      } else {
+        playerTurn.data[1] = 0;
+      }
+      console.log('prev player', playerTurn.data);
+      updateTurn(playerTurn.data[1]).then(function(current){
+        console.log('current player turn', current.data);
+        callback(current.data)
+      });
+    });
   };
+
+  var getTurn = function() {
+    return $http({
+      method: 'GET',
+      url: 'http://127.0.0.1:3000/updateTurn'
+    });
+  };
+
+  var updateTurn = function(turn) {
+    return $http({
+      method: 'POST',
+      url: 'http://127.0.0.1:3000/updateTurn',
+      data: JSON.stringify(turn),
+    })
+  }
 
   var checkWinner = function(player) {
     for (var i = 0; i < gameBoard.board.length; i++) {
@@ -120,14 +133,12 @@ simpleGame.factory('games', function($http) {
   };
 
   return {
-    playerScore: playerScore,
     getScore: getScore,
-    gameBoard: gameBoard,
-    playerSpace: playerSpace,
-    playerTurn: playerTurn,
     getBoard: getBoard,
     occupyBoard: occupyBoard,
     changePlayer: changePlayer,
+    getTurn: getTurn,
+    updateTurn: updateTurn,
     checkWinner: checkWinner,
     rowWin: rowWin,
     colWin: colWin,
@@ -142,36 +153,58 @@ simpleGame.factory('games', function($http) {
 simpleGame.controller('gamesController', function($scope, games) {
   $scope.blank = '_  _';
 
+  var renderBoard = function() {
+    games.getBoard().then(function(data) {
+      $scope.board = data.data;
+      $scope.row0 = $scope.board.board[0];
+      $scope.row1 = $scope.board.board[1];
+      $scope.row2 = $scope.board.board[2];
+    });
+  };
+
   var init = function() {
-    $scope.board = games.getBoard();
-    $scope.row0 = $scope.board.board[0];
-    $scope.row1 = $scope.board.board[1];
-    $scope.row2 = $scope.board.board[2];
-    $scope.player = games.changePlayer();
-    $scope.playerScore = games.getScore();
+    renderBoard();
+    games.getScore().then(function(data) {
+        $scope.playerScore = data.data;
+    });
+    games.getTurn().then(function(player) {
+      $scope.player = player.data[0];
+      console.log($scope.player);
+    });
   }
+
+  init();
 
   $scope.playerMove = function(input) {
     if (input.occupy !== '_  _') {
       console.log('Invalid move, space occupied');
       return;
     } else {
-      games.occupyBoard(input.coord, $scope.player);
-      $scope.board = games.getBoard();
-      if (games.checkWinner($scope.player)) {
-        console.log($scope.player + ' wins!');
-        games.newGame($scope.player);
-      }
-      $scope.player = games.changePlayer();
+      games.occupyBoard(input.coord, $scope.player).then(function(data){
+        renderBoard();
+      // if (games.checkWinner($scope.player)) {
+      //   console.log($scope.player + ' WINS!');
+      //   games.newGame($scope.player);
+      // }
+        games.changePlayer(function(player) {
+          $scope.player = player;
+        })
+      });
     }
   }
 
+
   // Hooked up to button to test functions when clicked
   $scope.devFunctions = function() {
-    console.log('test not hooked up');
-    // console.log($scope.playerScore);
+    // console.log('test not hooked up');
+    console.log('testing change player turn');
+    games.changePlayer(function(player) {
+      $scope.player = player;
+    })
   };
 
-  init();
-
 });
+
+
+
+
