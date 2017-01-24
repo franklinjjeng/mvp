@@ -33,6 +33,11 @@
           <td class="box" ng-repeat='grid in row2' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
         </tr>
       </table>
+      <div>
+        <span>Player {{ player[1] + 1 }}'s Turn ({{ player[0] }})</span>
+        <br>
+        <span>{{ winner }}</span>
+      </div>
       <hr>
         <pre>
           <button ng-click='devFunctions()'>Test Dev Functions</button>

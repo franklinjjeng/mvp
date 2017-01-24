@@ -2,6 +2,14 @@ var simpleGame = angular.module('simpleGame', []);
 
 simpleGame.factory('games', function($http) {
 
+  var blankBoard = {board: 
+    [
+      [{id: 0, occupy: '_  _', coord: [0, 0]}, {id: 1, occupy: '_  _', coord: [0, 1]}, {id: 2, occupy: '_  _', coord: [0, 2]}],
+      [{id: 3, occupy: '_  _', coord: [1, 0]}, {id: 4, occupy: '_  _', coord: [1, 1]}, {id: 5, occupy: '_  _', coord: [1, 2]}],
+      [{id: 6, occupy: '_  _', coord: [2, 0]}, {id: 7, occupy: '_  _', coord: [2, 1]}, {id: 8, occupy: '_  _', coord: [2, 2]}]
+    ]
+  };
+
   var getScore = function() {
     return $http({
       method: 'GET',
@@ -26,15 +34,12 @@ simpleGame.factory('games', function($http) {
 
   var changePlayer = function(callback) {
     getTurn().then(function(playerTurn) {
-      console.log('prev player', playerTurn.data);
       if(!playerTurn.data[1]) {
         playerTurn.data[1] = 1;
       } else {
         playerTurn.data[1] = 0;
       }
-      console.log('prev player', playerTurn.data);
-      updateTurn(playerTurn.data[1]).then(function(current){
-        console.log('current player turn', current.data);
+      updateTurn(playerTurn.data[1]).then(function(current) {
         callback(current.data)
       });
     });
@@ -55,81 +60,80 @@ simpleGame.factory('games', function($http) {
     })
   }
 
-  var checkWinner = function(player) {
-    for (var i = 0; i < gameBoard.board.length; i++) {
-      if(rowWin(player, i)) {
+  var checkWinner = function(player, board) {
+    for (var i = 0; i < board.length; i++) {
+      if(rowWin(player, i, board)) {
         return true;
-      } else if (colWin(player, i)) {
+      } else if (colWin(player, i, board)) {
         return true;
       }
     }
-    if (majorDiagWin(player)) {
+    if (majorDiagWin(player, board)) {
       return true;
-    } else if (minorDiagWin(player)) {
+    } else if (minorDiagWin(player, board)) {
       return true;
     }
     return false;
   };
 
-  var rowWin = function(player, row) {
-    for (var i = 0; i < gameBoard.board.length; i++) {
-      if (gameBoard.board[row][i].occupy !== player) {
+  var rowWin = function(player, row, board) {
+    for (var i = 0; i < board.length; i++) {
+      if (board[row][i].occupy !== player) {
         return false;
       }
     }
     return true;
   };
 
-  var colWin = function(player, col) {
-    for (var i = 0; i < gameBoard.board.length; i++) {
-      if (gameBoard.board[i][col].occupy !== player) {
+  var colWin = function(player, col, board) {
+    for (var i = 0; i < board.length; i++) {
+      if (board[i][col].occupy !== player) {
         return false;
       }
     }
     return true;
   };
 
-  var majorDiagWin = function(player) {
-    for (var i = 0; i < gameBoard.board.length; i++) {
-      if (gameBoard.board[i][i].occupy !== player) {
+  var majorDiagWin = function(player, board) {
+    for (var i = 0; i < board.length; i++) {
+      if (board[i][i].occupy !== player) {
         return false;
       }
     }
     return true;
   };
 
-  var minorDiagWin = function(player) {
-    for (var i = 0; i < gameBoard.board.length; i++) {
-      if (gameBoard.board[i][gameBoard.board.length - 1 - i].occupy !== player) {
+  var minorDiagWin = function(player, board) {
+    for (var i = 0; i < board.length; i++) {
+      if (board[i][board.length - 1 - i].occupy !== player) {
         return false;
       }
     }
     return true;
+  };
+
+  var determinPlayer = function(player) {
+    if (player === '_X_') {
+      return 'player1';
+    } else {
+      return 'player2';
+    }
   };
 
   var updateScore = function(player) {
-    if (player === '_X_') {
-      playerScore.scores.player1++;
-      return playerScore.scores.player1;
-    } else {
-      playerScore.scores.player2++;
-      return playerScore.scores.player2;
-    }
-  };
+    return $http({
+      method: 'POST',
+      url: 'http://127.0.0.1:3000/updateScore',
+      data: JSON.stringify(player),
+    })
+  }
 
   var clearBoard = function() {
-    for (var i = 0; i < gameBoard.board.length; i++) {
-      for (var j = 0; j < gameBoard.board.length; j++) {
-        gameBoard.board[i][j].occupy = '_  _';
-      }
-    }
-  };
-
-  var newGame = function(player) {
-    updateScore(player);
-    getScore();
-    clearBoard();
-    getBoard();
+    return $http({
+      method: 'POST',
+      url: 'http://127.0.0.1:3000/clearBoard',
+      data: JSON.stringify(blankBoard),
+    })
   };
 
   return {
@@ -146,15 +150,16 @@ simpleGame.factory('games', function($http) {
     minorDiagWin: minorDiagWin,
     updateScore: updateScore,
     clearBoard: clearBoard,
-    newGame: newGame,
+    determinPlayer: determinPlayer,
   }
 });
 
 simpleGame.controller('gamesController', function($scope, games) {
   $scope.blank = '_  _';
+  $scope.winner = '';
 
   var renderBoard = function() {
-    games.getBoard().then(function(data) {
+    return games.getBoard().then(function(data) {
       $scope.board = data.data;
       $scope.row0 = $scope.board.board[0];
       $scope.row1 = $scope.board.board[1];
@@ -162,30 +167,44 @@ simpleGame.controller('gamesController', function($scope, games) {
     });
   };
 
+  var newGame = function() {
+    games.clearBoard()
+    .then(renderBoard())
+    .then(games.updateScore(games.determinPlayer($scope.player)))
+    .then(games.getScore()
+    .then(function(data) {
+      $scope.playerScore = data.data;
+    }));
+  }
+
   var init = function() {
     renderBoard();
     games.getScore().then(function(data) {
         $scope.playerScore = data.data;
     });
     games.getTurn().then(function(player) {
-      $scope.player = player.data[0];
-      console.log($scope.player);
+      $scope.player = player.data;
     });
   }
 
   init();
 
   $scope.playerMove = function(input) {
+    $scope.winner = '';
     if (input.occupy !== '_  _') {
       console.log('Invalid move, space occupied');
       return;
     } else {
-      games.occupyBoard(input.coord, $scope.player).then(function(data){
-        renderBoard();
-      // if (games.checkWinner($scope.player)) {
-      //   console.log($scope.player + ' WINS!');
-      //   games.newGame($scope.player);
-      // }
+      games.occupyBoard(input.coord, $scope.player[0]).then(function(data){
+        renderBoard().then(function() {        
+          if (games.checkWinner($scope.player[0], $scope.board.board)) {
+            console.log($scope.player + ' WINS!');
+            $scope.winner += 'Player ' + ($scope.player[1] + 1) + ' ';
+            $scope.winner += $scope.player[0] + ' WINS!';
+            newGame();
+          }
+        });
+
         games.changePlayer(function(player) {
           $scope.player = player;
         })
@@ -196,11 +215,17 @@ simpleGame.controller('gamesController', function($scope, games) {
 
   // Hooked up to button to test functions when clicked
   $scope.devFunctions = function() {
-    // console.log('test not hooked up');
-    console.log('testing change player turn');
-    games.changePlayer(function(player) {
-      $scope.player = player;
-    })
+    console.log('test not hooked up');
+
+    // console.log('testing change player turn');
+    // games.changePlayer(function(player) {
+    //   $scope.player = player;
+    //   console.log($scope.player);
+    // })
+
+    games.getScore().then(function(data) {
+        $scope.playerScore = data.data;
+    });
   };
 
 });
