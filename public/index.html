@@ -1,13 +1,13 @@
 <!doctype html>
 <html>
   <header>
-    <title>Simple Games</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
-    <script src="client/app.js"></script>
-    <!-- <script src="client/services.js"></script> --> 
-    <link rel="stylesheet" href="style.css"/>
+    <title>Tactic Toe</title>
   </header>
   <body ng-app='simpleGame'>
+    <nav class='nav-bar'>
+      <a href='/#!/game' class='nav-option'>Home</a>
+      <a href='/#!/rules' class='nav-option'>Rules</a>
+    </nav>
     <div ng-controller='gamesController'>
       <div>
         <table>
@@ -17,35 +17,29 @@
           </thead>
           <tbody>
             <tr>
-              <!-- <td>Score: {{ playerScore.scores.player1 }}</td>
-              <td>Score: {{ playerScore.scores.player2 }}</td> -->
               <td>Score: {{ playerScore[0].score }}</td>
               <td>Score: {{ playerScore[1].score }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <table class="gameBoard">
-        <tr>
-          <td class="box" ng-repeat='grid in row0' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
-        </tr>
-        <tr>
-          <td class="box" ng-repeat='grid in row1' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
-        </tr>
-        <tr>
-          <td class="box" ng-repeat='grid in row2' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
-        </tr>
-      </table>
-      <div>
-        <span>Player {{ player[1] + 1 }}'s Turn ({{ player[0] }})</span>
-        <br>
-        <span>{{ invalid }}</span>
-        <span>{{ winner }}</span>
-      </div>
-      <hr>
+      <div ng-view></div>
+
+      <!-- Development test button -->
+      <!-- <hr>
         <pre>
           <button ng-click='devFunctions()'>Test Dev Functions</button>
-        </pre>
+        </pre> -->
+
     </div>
+
+
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script> -->
+    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/angular-route/angular-route.js"></script>
+    <link rel="stylesheet" href="style.css"/>
+    <!-- <script src="client/services.js"></script> -->
+    <!-- <script src="client/controller.js"></script> -->
+    <script src="client/app.js"></script>
   </body>
 </html>

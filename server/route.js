@@ -20,7 +20,6 @@ var player2 = new scoreBoard({
 
 scoreBoard.find({name : /^player1/}, function (err, docs) {
   if (!docs.length){
-    console.log('create new user if not here');
     player1.save(function(err) {
       if (err) throw err;
       console.log('player1 saved to db');
@@ -32,7 +31,6 @@ scoreBoard.find({name : /^player1/}, function (err, docs) {
 
 scoreBoard.find({name : /^player2/}, function (err, docs) {
   if (!docs.length){
-    console.log('create new user if not here');
     player2.save(function(err) {
       if (err) throw err;
       console.log('player2 saved to db');
@@ -41,7 +39,6 @@ scoreBoard.find({name : /^player2/}, function (err, docs) {
     console.log('user exists: ', player2);
   }
 });
-
 
 
 app = express();
@@ -54,12 +51,7 @@ var gameBoard = {board:
   ]
 };
 
-var playerScore = {scores:
-  {
-    player1: 0,
-    player2: 0
-  }
-}
+var pieceAge = [[],[]];
 
 var playerSpace = ['_X_', '_O_'];
 
@@ -111,14 +103,19 @@ app.post('/clearBoard', function(req, res) {
   });
 });
 
-// app.post('/updateScore', function(req, res) {
-//   console.log('POST request recieved on /updateScore');
-//   req.on('data', function(chunk) {
-//     playerScore.scores[JSON.parse(chunk.toString())]++;
-//     console.log(playerScore);
-//     res.send(playerScore);
-//   });
-// });
+app.get('/pieceAge', function(req, res) {
+  console.log('GET request recieved on /pieceAge');
+  res.send(pieceAge);
+});
+
+app.post('/pieceAge', function(req, res) {
+  console.log('POST request recieved on /pieceAge');
+  req.on('data', function(chunk) {
+    var data = JSON.parse(chunk.toString());
+    pieceAge = data;
+    res.send(pieceAge);
+  });
+});
 
 app.get('/scoreBoard', function(req, res) {
   console.log('GET request recieved on /scoreBoard');

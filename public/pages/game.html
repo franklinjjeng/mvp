@@ -1,0 +1,19 @@
+<div>
+  <table class="gameBoard">
+    <tr>
+      <td class="box" ng-repeat='grid in row0' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
+    </tr>
+    <tr>
+      <td class="box" ng-repeat='grid in row1' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
+    </tr>
+    <tr>
+      <td class="box" ng-repeat='grid in row2' ng-click='playerMove(grid)'>{{ grid.occupy }}</td>
+    </tr>
+  </table>
+  <div>
+    <span>Player {{ player[1] + 1 }}'s Turn ({{ player[0] }})</span>
+    <br>
+    <span>{{ invalid }}</span>
+    <span>{{ winner }}</span>
+  </div>
+</div>

@@ -1,4 +1,14 @@
-var simpleGame = angular.module('simpleGame', []);
+// angular.module('simpleGame', [
+//   'simpleGame.factory',
+//   'simpleGame.controller'])
+
+var simpleGame = angular.module('simpleGame', ['ngRoute']);
+
+simpleGame.config(['$routeProvider', function($routeProvider) {
+  $routeProvider.when('/game', {templateUrl: 'pages/game.html'});
+  $routeProvider.when('/rules', {templateUrl: 'pages/rules.html'});
+  $routeProvider.otherwise({redirectTo: '/game'});
+}]);
 
 simpleGame.factory('games', function($http) {
 
@@ -120,15 +130,6 @@ simpleGame.factory('games', function($http) {
     }
   };
 
-  // deprecated
-  // var updateScore = function(player) {
-  //   return $http({
-  //     method: 'POST',
-  //     url: 'http://127.0.0.1:3000/updateScore',
-  //     data: JSON.stringify(player),
-  //   })
-  // }
-
   var clearBoard = function() {
     return $http({
       method: 'POST',
@@ -136,6 +137,21 @@ simpleGame.factory('games', function($http) {
       data: JSON.stringify(blankBoard),
     })
   };
+
+  var getPieceAge = function () {
+    return $http({
+      method: 'GET',
+      url: 'http://127.0.0.1:3000/pieceAge'
+    })
+  }
+
+  var updatePieceAge = function (data) {
+    return $http({
+      method: 'POST',
+      url: 'http://127.0.0.1:3000/pieceAge',
+      data: JSON.stringify(data)
+    })
+  }
 
   var getScoreBoard = function() {
     return $http({
@@ -164,9 +180,10 @@ simpleGame.factory('games', function($http) {
     colWin: colWin,
     majorDiagWin: majorDiagWin,
     minorDiagWin: minorDiagWin,
-    // updateScore: updateScore,
     clearBoard: clearBoard,
     determinPlayer: determinPlayer,
+    getPieceAge: getPieceAge,
+    updatePieceAge: updatePieceAge,
     getScoreBoard: getScoreBoard,
     updateScoreBoard: updateScoreBoard
   }
@@ -175,6 +192,7 @@ simpleGame.factory('games', function($http) {
 simpleGame.controller('gamesController', function($scope, games) {
   $scope.blank = '_  _';
   $scope.winner = '';
+  $scope.invalid = '';
 
   var renderBoard = function() {
     return games.getBoard().then(function(data) {
@@ -185,9 +203,27 @@ simpleGame.controller('gamesController', function($scope, games) {
     });
   };
 
+  var init = function() {
+    renderBoard();
+    games.getScoreBoard().then(function(data) {
+      $scope.playerScore = data.data;
+    });
+    games.getTurn().then(function(player) {
+      $scope.player = player.data;
+    });
+    games.getPieceAge().then(function(data) {
+      $scope.pieceAge = data.data;
+    });
+  }
+  init();
+
   var newGame = function() {
     games.clearBoard()
     .then(renderBoard())
+    .then(function() {
+      $scope.pieceAge = [[],[]];
+      games.updatePieceAge($scope.pieceAge)
+    })
     .then(function() {
       addWinnerScore()
     });
@@ -209,18 +245,15 @@ simpleGame.controller('gamesController', function($scope, games) {
     }
   }
 
-  var init = function() {
-    renderBoard();
-    games.getScoreBoard()
-    .then(function(data) {
-      $scope.playerScore = data.data;
-    })
-    games.getTurn().then(function(player) {
-      $scope.player = player.data;
-    });
+  var pieceAgeCheck = function(player) {
+    return $scope.pieceAge[player].length === 3 ? true : false;
+  };
+
+  var findPieceAgeCoord = function(player) {
+    $scope.emptyOccupy = $scope.pieceAge[player][0]
+    $scope.pieceAge[player].splice(0, 1);
   }
 
-  init();
 
   $scope.playerMove = function(input) {
     $scope.winner = '';
@@ -229,6 +262,11 @@ simpleGame.controller('gamesController', function($scope, games) {
       $scope.invalid = 'Invalid move, space occupied';
       return;
     } else {
+      if (pieceAgeCheck($scope.player[1])) {
+        findPieceAgeCoord($scope.player[1]);
+        games.occupyBoard($scope.emptyOccupy, $scope.blank).then(renderBoard());
+      }
+      $scope.pieceAge[$scope.player[1]].push(input.coord);
       games.occupyBoard(input.coord, $scope.player[0]).then(function(data){
         renderBoard().then(function() {        
           if (games.checkWinner($scope.player[0], $scope.board.board)) {
@@ -237,7 +275,9 @@ simpleGame.controller('gamesController', function($scope, games) {
             newGame();
           }
         });
-
+        games.updatePieceAge($scope.pieceAge).then(function(data) {
+          $scope.pieceAge = data.data;
+        });
         games.changePlayer(function(player) {
           $scope.player = player;
         })
@@ -245,10 +285,12 @@ simpleGame.controller('gamesController', function($scope, games) {
     }
   }
 
-
-  // Hooked up to button to test functions when clicked
+  // // Hooked up to button to test functions when clicked
   $scope.devFunctions = function() {
-    // console.log('test not hooked up');
+    console.log('test not hooked up');
+
+    // console.log('Clearing board');
+    // games.clearBoard().then(renderBoard());
 
     // console.log('testing change player turn');
     // games.changePlayer(function(player) {
@@ -259,7 +301,3 @@ simpleGame.controller('gamesController', function($scope, games) {
   };
 
 });
-
-
-
-
