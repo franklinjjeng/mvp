@@ -2,28 +2,19 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
-  entry: path.resolve(__dirname, 'src/app', 'client.jsx'),
+  entry: path.resolve(__dirname, 'src/app', 'index.js'),
   output: {
     path: path.resolve(__dirname, 'src/public/build'),
     filename: 'bundle.js'
   },
-  resolve: {
-    modulesDirectories: ['node_modules', 'src'],
-    extensions: ['', '.js', '.jsx', '.css'],
-  },
   module: {
     loaders: [
       {
-        test: /\.jsx?/,
+        test: /\.jsx?$/,
         include: path.resolve(__dirname, 'src/app'),
-        exclude: /node_modules/,
-        loader: 'babel'
+        loader: 'babel-loader'
       }
     ]
   },
   devtool: 'source-map',
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin(),
-  ]
 };

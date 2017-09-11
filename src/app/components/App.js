@@ -1,8 +1,9 @@
 import React from 'react';
 
 // Components
-import Navbar from './navigation/navbar.jsx';
-// import Footer from './footer.jsx';
+import Navbar from './navigation/Navbar.js';
+import Main from './Main.js';
+
 
 
 export default class App extends React.Component {
@@ -14,10 +15,7 @@ export default class App extends React.Component {
     return (
       <div>
         <Navbar className="navbar" props={this.props} />
-        <div className="app-body">
-          {this.props.children}
-        </div>
-        {/*<Footer />*/}
+        <Main />
       </div>
     );
   }
